@@ -24,7 +24,7 @@ func (c *MerchantController) Create(ctx *gin.Context) {
 		response.ValidationError(ctx, "Invalid request body", err)
 		return
 	}
-	merchant, err := c.merchantService.Create(req)
+	merchant, err := c.merchantService.Create(req, ctx)
 	if err != nil {
 		response.BadRequest(ctx, err.Error(), nil)
 		return

@@ -35,10 +35,18 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 
-		claims := token.Claims.(*util.UserClaims)
-		ctx.Set("user_id", claims.UserId)
-		ctx.Set("name", claims.Name)
-		ctx.Set("code", claims.Code)
+		//claims := token.Claims.(*util.UserClaims)
+		//ctx.Set("user_id", claims.UserId)
+		//ctx.Set("name", claims.Name)
+		//ctx.Set("code", claims.Code)
+
+		claims, err := util.GetUserClaimsFromAuthHeader(ctx.GetHeader("Authorization"))
+		if err != nil {
+			ctx.AbortWithStatusJSON(401, gin.H{"message": err.Error()})
+			return
+		}
+
+		ctx.Set(AuthUserContextKey, claims)
 
 		ctx.Next()
 	}
