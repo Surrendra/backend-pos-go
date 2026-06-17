@@ -17,5 +17,6 @@ func main() {
 	r := gin.Default()
 	api := r.Group("/api")
 	route.RegisterAuthenticationRoute(api, db)
+	route.RegisterMaintenanceRoute(api, db)
 	r.Run(":" + cfg.AppPort)
 }

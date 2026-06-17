@@ -10,6 +10,9 @@ import (
 type MerchantRepositoryInterface interface {
 	FindByCode(code string) (*model.Merchant, error)
 	CreateDirect(userID uint64, MerchantID uint64, createdUserID uint64, createdUserName string)
+	Create(merchant *model.Merchant) (*model.Merchant, error)
+	Update(MerchantID uint64, merchant model.Merchant) (model.Merchant, error)
+	Delete(MerchantID uint64) error
 }
 
 type merchantRepository struct {
@@ -46,7 +49,7 @@ func (r *merchantRepository) Update(MerchantID uint64, merchant model.Merchant) 
 	return merchant, nil
 }
 
-func (r *merchantRepository) Dpdate(MerchantID uint64) error {
+func (r *merchantRepository) Delete(MerchantID uint64) error {
 	err := r.db.Where("id = ?", MerchantID).Delete(&model.Merchant{}).Error
 	return err
 }

@@ -11,6 +11,7 @@ import (
 type UserRepositoryInterface interface {
 	GetData() ([]model.User, error)
 	FindByUsername(username string) (*model.User, error)
+	FindByUsernameOrEmail(term string) (*model.User, error)
 	GetUserPermissions(userId uint64) ([]model.Permission, error)
 	Update(userCode string, user model.User) (model.User, error)
 	FindByCode(userCode string) (model.User, error)
@@ -32,6 +33,12 @@ func (r *userRepository) GetData() ([]model.User, error) {
 	var users []model.User
 	err := r.db.Preload("Role").Select("id, code, organization_id, role_id, name, email, password, address, phone, status, created_at, updated_at, deleted_at").Find(&users).Error
 	return users, err
+}
+
+func (r *userRepository) FindByUsernameOrEmail(term string) (*model.User, error) {
+	var user model.User
+	err := r.db.Where("username = ? OR email = ?", term, term).First(&user).Error
+	return &user, err
 }
 
 func (r *userRepository) FindByUsername(username string) (*model.User, error) {

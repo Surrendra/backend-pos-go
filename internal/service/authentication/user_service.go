@@ -25,7 +25,7 @@ func NewUserService(userRepository authRepository.UserRepositoryInterface, roleR
 }
 
 func (s *UserService) Login(username string, password string) (*model.User, error) {
-	user, err := s.userRepository.FindByUsername(username)
+	user, err := s.userRepository.FindByUsernameOrEmail(username)
 	if err != nil {
 		//return nil, fmt.Errorf("Something wrong when find user by username %s", username)
 		return nil, fmt.Errorf("User with username %s does not exist", username)
