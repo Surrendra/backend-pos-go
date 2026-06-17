@@ -73,6 +73,35 @@ func seedPermission(db *gorm.DB) {
 				},
 			},
 		},
+		{
+			Name:        "maintenance",
+			Description: "Maintenance",
+			Active:      constan.IndicatorActive,
+			Children: []modelAuth.Permission{
+				{
+					Name:        "merchant.index",
+					Description: "View Merchant Data",
+					Active:      constan.IndicatorActive,
+					Children: []modelAuth.Permission{
+						{
+							Name:        "merchant.create",
+							Description: "Create Merchant Data",
+							Active:      constan.IndicatorActive,
+						},
+						{
+							Name:        "merchant.edit",
+							Description: "Edit Merchant Data",
+							Active:      constan.IndicatorActive,
+						},
+						{
+							Name:        "merchant.delete",
+							Description: "Delete Merchant Data",
+							Active:      constan.IndicatorActive,
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, p := range permissons {
@@ -273,6 +302,24 @@ func seedUser(db *gorm.DB) {
 				}
 			} else {
 				logrus.Error("SeedUser@findUserMerchant", err)
+			}
+		}
+
+		var userRole modelAuth.UserRole
+		err = db.Where("user_id = ? AND role_id = ?", user.ID, role.ID).First(&userRole).Error
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				userRole = modelAuth.UserRole{
+					UserID:          user.ID,
+					RoleID:          role.ID,
+					CreatedUserID:   1,
+					CreatedUserName: "Surendra Made",
+				}
+				if err = db.Create(&userRole).Error; err != nil {
+					logrus.Error("SeedUser@userRole", err)
+				}
+			} else {
+				logrus.Error("SeedUser@findUserRole", err)
 			}
 		}
 	}

@@ -57,7 +57,13 @@ func RequirePermission(authz *auth.AuthorizationService, reqPermission string) g
 			})
 			return
 		}
-
+		// if cfg.AppDebug {
+		// 	fmt.Println("User Permissions:", userPermissions, len(userPermissions))
+		// }
+		if len(userPermissions) == 0 {
+			ctx.AbortWithStatusJSON(403, gin.H{"message": "User does not have any permissions"})
+			return
+		}
 		for _, userPermission := range userPermissions {
 			if userPermission == reqPermission {
 				ctx.Next()

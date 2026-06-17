@@ -63,11 +63,11 @@ func (s *AuthorizationService) GetUserPermissions(userId uint64) ([]string, erro
 	logrus.Info("Permissions loaded from db|", cacheKey)
 	err = s.db.
 		Table("permissions").
-		Select("permissions.code").
+		Select("permissions.name").
 		Joins("JOIN role_permissions ON role_permissions.permission_id = permissions.id").
 		Joins("JOIN user_roles ON user_roles.role_id = role_permissions.role_id").
 		Where("user_roles.user_id = ?", userId).
-		Pluck("permissions.code", &permissions).Error
+		Pluck("permissions.name", &permissions).Error
 
 	if err != nil {
 		return nil, err
