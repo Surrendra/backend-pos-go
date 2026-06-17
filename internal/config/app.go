@@ -27,6 +27,8 @@ type Config struct {
 	RedisPort     string
 	RedisPassword string
 	RedisUsername string
+
+	FrontendURL string
 }
 
 func Load() *Config {
@@ -49,6 +51,8 @@ func Load() *Config {
 		RedisPort:     os.Getenv("REDIS_PORT"),
 		RedisPassword: os.Getenv("REDIS_PASSWORD"),
 		RedisUsername: os.Getenv("REDIS_USERNAME"),
+
+		FrontendURL: os.Getenv("FRONTEND_URL"),
 	}
 
 	if cfg.AppPort == "" {
