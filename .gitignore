@@ -1,0 +1,29 @@
+# Binaries
+/bin/
+/build/
+/dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Output dari Go tools
+*.out
+
+# Dependency
+vendor/
+
+# File konfigurasi/editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# File sistem
+.DS_Store
+Thumbs.db
+
+# File environment
+.env
