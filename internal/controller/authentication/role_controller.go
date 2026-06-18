@@ -7,6 +7,7 @@ import (
 	authService "BackendPOS/internal/service/authentication"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type RoleController struct {
@@ -56,4 +57,27 @@ func (c *RoleController) Create(ctx *gin.Context) {
 		return
 	}
 	response.Success(ctx, "Role created successfully", role)
+}
+
+func (c *RoleController) Update(ctx *gin.Context) {
+	var req authRequest.UpdateRoleRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(ctx, "Invalid request body", err.Error())
+		return
+	}
+	logrus.Info(req)
+	role, err := c.roleService.Update(ctx.Param("code"), req)
+	if err != nil {
+		response.Error(ctx, 500, "Failed to update role", err.Error())
+		return
+	}
+	response.Success(ctx, "Role updated successfully", role)
+}
+func (c *RoleController) Delete(ctx *gin.Context) {
+	err := c.roleService.Delete(ctx.Param("code"))
+	if err != nil {
+		response.Error(ctx, 500, "Failed to delete role", err.Error())
+		return
+	}
+	response.Success(ctx, "Role deleted successfully", nil)
 }

@@ -12,15 +12,22 @@ import (
 )
 
 type RoleService struct {
-	authRepository authRepository.RoleRepositoryInterface
+	roleRepository       authRepository.RoleRepositoryInterface
+	permissionRepository authRepository.PermissionRepositoryInterface
 }
 
-func NewRoleService(authRepository authRepository.RoleRepositoryInterface) *RoleService {
-	return &RoleService{authRepository: authRepository}
+func NewRoleService(
+	roleRepository authRepository.RoleRepositoryInterface,
+	permissionRepository authRepository.PermissionRepositoryInterface,
+) *RoleService {
+	return &RoleService{
+		roleRepository:       roleRepository,
+		permissionRepository: permissionRepository,
+	}
 }
 
 func (s *RoleService) GetData(req request.DataTableRequest) ([]model.Role, error) {
-	roles, err := s.authRepository.GetData()
+	roles, err := s.roleRepository.GetData()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get roles: %v", err)
 	}
@@ -40,7 +47,7 @@ func (s *RoleService) GetData(req request.DataTableRequest) ([]model.Role, error
 }
 
 func (s *RoleService) Create(req authRequest.CreateRoleRequest) (*model.Role, error) {
-	checkRoleName, err := s.authRepository.FindByName(req.Name)
+	checkRoleName, err := s.roleRepository.FindByName(req.Name)
 	if err != nil && err.Error() != "record not found" {
 		return nil, fmt.Errorf("something wrong when checking role name: %v", err)
 	}
@@ -51,27 +58,36 @@ func (s *RoleService) Create(req authRequest.CreateRoleRequest) (*model.Role, er
 	role.Name = req.Name
 	role.Code = uuid.NewString()
 	role.Description = req.Description
-	role, err = s.authRepository.Create(role)
+	role, err = s.roleRepository.Create(role)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create role: %v", err)
 	}
 	return &role, nil
 }
 
-func (s *RoleService) Update(roleID uint64, req authRequest.UpdateRoleRequest) (*model.Role, error) {
+func (s *RoleService) Update(code string, req authRequest.UpdateRoleRequest) (*model.Role, error) {
+	findRRole, err := s.roleRepository.FindByCode(code)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find role by code: %v", err)
+	}
 	var role model.Role
 	role.Name = req.Name
 	role.Description = req.Description
 	role.Active = req.Active
-	role, err := s.authRepository.Update(roleID, role)
+	role, err = s.roleRepository.Update(findRRole.ID, role)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update role: %v", err)
 	}
-	return &role, nil
+	s.roleRepository.ReAttachPermissions(req.Permissions, findRRole.ID)
+	return findRRole, nil
 }
 
-func (s *RoleService) Delete(roleID uint64) error {
-	err := s.authRepository.Delete(roleID)
+func (s *RoleService) Delete(code string) error {
+	findRole, err := s.roleRepository.FindByCode(code)
+	if err != nil {
+		return fmt.Errorf("failed to find role by code: %v", err)
+	}
+	err = s.roleRepository.Delete(findRole.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete role: %v", err)
 	}
@@ -79,7 +95,7 @@ func (s *RoleService) Delete(roleID uint64) error {
 }
 
 func (s *RoleService) FindByID(roleID uint64) (*model.Role, error) {
-	role, err := s.authRepository.FindByID(roleID)
+	role, err := s.roleRepository.FindByID(roleID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find role by ID: %v", err)
 	}
@@ -87,7 +103,7 @@ func (s *RoleService) FindByID(roleID uint64) (*model.Role, error) {
 }
 
 func (s *RoleService) FindByCode(code string) (*model.Role, error) {
-	role, err := s.authRepository.FindByCode(code)
+	role, err := s.roleRepository.FindByCode(code)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find role by code: %v", err)
 	}
@@ -95,5 +111,5 @@ func (s *RoleService) FindByCode(code string) (*model.Role, error) {
 }
 
 func (s *RoleService) Datatable(req request.DataTableRequest) ([]model.Role, response.DataTableMeta, error) {
-	return s.authRepository.Datatable(req)
+	return s.roleRepository.Datatable(req)
 }

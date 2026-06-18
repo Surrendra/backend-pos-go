@@ -20,6 +20,7 @@ type RoleRepositoryInterface interface {
 	Datatable(req request.DataTableRequest) ([]model.Role, response.DataTableMeta, error)
 	FindByID(roleID uint64) (*model.Role, error)
 	FindByCode(code string) (*model.Role, error)
+	ReAttachPermissions(permissionNames []string, roleID uint64) error
 }
 
 type roleRepository struct {
@@ -93,4 +94,40 @@ func (r *roleRepository) FindByCode(code string) (*model.Role, error) {
 	var role model.Role
 	err := r.db.Where("code = ?", code).First(&role).Error
 	return &role, err
+}
+
+func (r *roleRepository) ReAttachPermissions(permissionNames []string, roleID uint64) error {
+	var permissionIDs []uint64
+	// get permission IDs from names
+	err := r.db.Model(&model.Permission{}).Where("name IN ?", permissionNames).Pluck("id", &permissionIDs).Error
+	if err != nil {
+		return err
+	}
+	// delete role_permission where not in permissionIDs
+	err = r.db.Where("role_id = ? AND permission_id NOT IN ?", roleID, permissionIDs).Delete(&model.RolePermission{}).Error
+	if err != nil {
+		return err
+	}
+
+	// attach new permissions to role
+	for _, permissionID := range permissionIDs {
+		var rolePermission model.RolePermission
+		err := r.db.Where("role_id = ? AND permission_id = ?", roleID, permissionID).First(&rolePermission).Error
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				rolePermission = model.RolePermission{
+					RoleId:       roleID,
+					PermissionId: permissionID,
+				}
+				err = r.db.Create(&rolePermission).Error
+				if err != nil {
+					return err
+				}
+			} else {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
