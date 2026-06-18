@@ -3,7 +3,10 @@ package repository
 import (
 	"fmt"
 
+	"BackendPOS/internal/helper"
 	model "BackendPOS/internal/model/authentication"
+	"BackendPOS/internal/request"
+	"BackendPOS/internal/response"
 
 	"gorm.io/gorm"
 )
@@ -19,6 +22,7 @@ type UserRepositoryInterface interface {
 	Delete(userCode string) error
 	Create(user model.User) (model.User, error)
 	AssignRole(userID uint64, roleID uint64, createdUserID uint64, createdUserName string) error
+	Datatable(req request.DataTableRequest) ([]model.User, response.DataTableMeta, error)
 }
 
 type userRepository struct {
@@ -113,4 +117,9 @@ func (r *userRepository) revokeRole(userID uint64, roleID uint64) error {
 		return err
 	}
 	return nil
+}
+
+func (r *userRepository) Datatable(req request.DataTableRequest) ([]model.User, response.DataTableMeta, error) {
+	baseDB := r.db.Model(&model.User{}).Preload("Role")
+	return helper.Paginate[model.User](baseDB, req, []string{"name", "username", "email"})
 }

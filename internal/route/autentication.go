@@ -24,6 +24,7 @@ func RegisterAuthenticationRoute(r *gin.RouterGroup, db *gorm.DB, authz *authSer
 
 	authController := controller.NewAuthController(userService)
 	roleController := authenticationController.NewRoleController(roleService)
+	userController := authenticationController.NewUserController(userService)
 
 	authentication := r.Group("/authentication")
 	{
@@ -36,6 +37,15 @@ func RegisterAuthenticationRoute(r *gin.RouterGroup, db *gorm.DB, authz *authSer
 			role.GET("get_data", middleware.RequirePermission(authz, "role.index"), roleController.GetData)
 			role.GET("datatable", middleware.RequirePermission(authz, "role.index"), roleController.Datatable)
 			role.PUT("update/:code", middleware.RequirePermission(authz, "role.edit"), roleController.Update)
+			role.POST("create", middleware.RequirePermission(authz, "role.create"), roleController.Create)
+		}
+		user := authentication.Group("/user")
+		{
+			user.GET("get_data", middleware.RequirePermission(authz, "user.index"), userController.GetData)
+			user.GET("datatable", middleware.RequirePermission(authz, "user.index"), userController.Datatable)
+			user.POST("create", middleware.RequirePermission(authz, "user.store"), userController.Create)
+			user.PUT("update/:code", middleware.RequirePermission(authz, "user.edit"), userController.Update)
+			user.DELETE("delete/:code", middleware.RequirePermission(authz, "user.delete"), userController.Delete)
 		}
 	}
 
