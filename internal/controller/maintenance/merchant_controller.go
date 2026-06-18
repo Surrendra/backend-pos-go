@@ -18,6 +18,37 @@ func NewMerchantController(merchantService *maintenanceService.MerchantService) 
 	}
 }
 
+func (c *MerchantController) GetData(ctx *gin.Context) {
+	var req maintenanceRequest.MerchantDataTableRequest
+	var err = ctx.ShouldBindQuery(&req)
+	if err != nil {
+		response.BadRequest(ctx, "Invalid query parameters", err.Error())
+		return
+	}
+	req.SetDefaults()
+	merchants, err := c.merchantService.GetData(req)
+	if err != nil {
+		response.Error(ctx, 500, "Failed to retrieve data", err.Error())
+		return
+	}
+	response.Success(ctx, "Data retrieved successfully", merchants)
+}
+
+func (c *MerchantController) Datatable(ctx *gin.Context) {
+	var req maintenanceRequest.MerchantDataTableRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		response.BadRequest(ctx, "Invalid query parameters", err.Error())
+		return
+	}
+	req.SetDefaults()
+	merchants, meta, err := c.merchantService.Datatable(req)
+	if err != nil {
+		response.Error(ctx, 500, "Failed to retrieve data", err.Error())
+		return
+	}
+	response.SuccessDatatable(ctx, "Data retrieved successfully", merchants, meta)
+}
+
 func (c *MerchantController) Create(ctx *gin.Context) {
 	var req maintenanceRequest.CreateMerchantRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -52,24 +83,5 @@ func (c *MerchantController) Delete(ctx *gin.Context) {
 		response.ValidationError(ctx, "Invalid merchant ID", err)
 		return
 	}
-	if err != nil {
-		response.BadRequest(ctx, err.Error(), nil)
-		return
-	}
 	response.Success(ctx, "Merchant deleted successfully", nil)
-}
-
-func (c *MerchantController) Datatable(ctx *gin.Context) {
-	var req maintenanceRequest.MerchantDataTableRequest
-	if err := ctx.ShouldBindQuery(&req); err != nil {
-		response.BadRequest(ctx, "Invalid query parameters", err.Error())
-		return
-	}
-	req.SetDefaults()
-	merchants, meta, err := c.merchantService.Datatable(req)
-	if err != nil {
-		response.Error(ctx, 500, "Failed to retrieve data", err.Error())
-		return
-	}
-	response.SuccessDatatable(ctx, "Data retrieved successfully", merchants, meta)
 }

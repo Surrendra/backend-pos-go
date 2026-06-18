@@ -23,7 +23,37 @@ func NewMerchantService(merchantRepository maintenanceRepository.MerchantReposit
 	}
 }
 
+func (s *MerchantService) GetData(req maintenanceRequest.MerchantDataTableRequest) ([]model.Merchant, error) {
+	merchants, err := s.merchantRepository.GetData()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get merchants: %v", err)
+	}
+	if req.Active != "" {
+		merchants = merchants.Where("active = ?", req.Active)
+	}
+	if req.Limit > 0 {
+		merchants = merchants.Limit(req.Limit)
+	}
+	if req.Page > 0 {
+		offset := (req.Page - 1) * req.Limit
+		merchants = merchants.Offset(offset)
+	}
+	var result []model.Merchant
+	err = merchants.Find(&result).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get merchants: %v", err)
+	}
+	return result, nil
+}
+
 func (s *MerchantService) Create(req maintenanceRequest.CreateMerchantRequest, ctx *gin.Context) (*model.Merchant, error) {
+	checkMerchantDomain, err := s.merchantRepository.FindByDomain(req.Domain)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, fmt.Errorf("something wrong when checking merchant domain: %v", err)
+	}
+	if checkMerchantDomain != nil {
+		return nil, fmt.Errorf("merchant with domain %s already exists", req.Domain)
+	}
 	var merchant model.Merchant
 	authCtx := middleware.NewGinAuthContext(ctx)
 	merchant.Code = uuid.NewString()

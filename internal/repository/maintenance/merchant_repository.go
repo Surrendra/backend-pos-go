@@ -13,12 +13,14 @@ import (
 var merchantSearchColumns = []string{"name", "code", "domain", "pic_email", "pic_name", "description"}
 
 type MerchantRepositoryInterface interface {
+	GetData() (*gorm.DB, error)
 	FindByCode(code string) (*model.Merchant, error)
 	CreateDirect(userID uint64, MerchantID uint64, createdUserID uint64, createdUserName string)
 	Create(merchant *model.Merchant) (*model.Merchant, error)
 	Update(MerchantID uint64, merchant model.Merchant) (model.Merchant, error)
 	Delete(MerchantID uint64) error
 	Datatable(req maintenanceRequest.MerchantDataTableRequest) ([]model.Merchant, response.DataTableMeta, error)
+	FindByDomain(domain string) (*model.Merchant, error)
 }
 
 type merchantRepository struct {
@@ -56,6 +58,12 @@ func (r *merchantRepository) CreateDirect(userID uint64, MerchantID uint64, crea
 	_ = r.db.Create(userMerchant).Error
 }
 
+func (r *merchantRepository) FindByDomain(domain string) (*model.Merchant, error) {
+	var merchant model.Merchant
+	err := r.db.Where("domain = ?", domain).First(&merchant).Error
+	return &merchant, err
+}
+
 func (r *merchantRepository) Update(MerchantID uint64, merchant model.Merchant) (model.Merchant, error) {
 	r.db.Where("id = ?", MerchantID).Updates(&merchant)
 	newMerchant, _ := r.FindByID(MerchantID)
@@ -73,4 +81,9 @@ func (r *merchantRepository) Datatable(req maintenanceRequest.MerchantDataTableR
 		baseDB = baseDB.Where("active = ?", req.Active)
 	}
 	return helper.Paginate[model.Merchant](baseDB, req.DataTableRequest, merchantSearchColumns)
+}
+
+func (r *merchantRepository) GetData() (*gorm.DB, error) {
+	merchants := r.db.Model(&model.Merchant{})
+	return merchants, nil
 }

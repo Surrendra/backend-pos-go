@@ -1,11 +1,12 @@
 package service
 
 import (
-	constan "BackendPOS/internal/constant"
+	"BackendPOS/internal/constant"
 	"BackendPOS/internal/helper"
 	model "BackendPOS/internal/model/authentication"
 	authRepository "BackendPOS/internal/repository/authentication"
 	maintenanceRepository "BackendPOS/internal/repository/maintenance"
+	authRequest "BackendPOS/internal/request/authentication"
 	request "BackendPOS/internal/request/authentication"
 	"BackendPOS/internal/util"
 	"fmt"
@@ -20,8 +21,16 @@ type UserService struct {
 	merchantRepository maintenanceRepository.MerchantRepositoryInterface
 }
 
-func NewUserService(userRepository authRepository.UserRepositoryInterface, roleRepository authRepository.RoleRepositoryInterface, merchantRepository maintenanceRepository.MerchantRepositoryInterface) *UserService {
-	return &UserService{userRepository: userRepository, roleRepository: roleRepository, merchantRepository: merchantRepository}
+func NewUserService(
+	userRepository authRepository.UserRepositoryInterface,
+	roleRepository authRepository.RoleRepositoryInterface,
+	merchantRepository maintenanceRepository.MerchantRepositoryInterface,
+) *UserService {
+	return &UserService{
+		userRepository:     userRepository,
+		roleRepository:     roleRepository,
+		merchantRepository: merchantRepository,
+	}
 }
 
 func (s *UserService) Login(username string, password string) (*model.User, error) {
@@ -57,14 +66,14 @@ func (s *UserService) Register(request request.RegisterRequest) (*model.User, er
 	user.Username = request.Username
 	user.Address = &request.Address
 	user.Phone = &request.Phone
-	user.Active = constan.IndicatorActive
-	user.Status = constan.StatusActive
+	user.Active = constant.IndicatorActive
+	user.Status = constant.StatusActive
 
-	defaultRole, err := s.roleRepository.FindByName(constan.RoleOperatorName)
+	defaultRole, err := s.roleRepository.FindByName(constant.RoleOperatorName)
 	if err != nil {
 		return nil, fmt.Errorf("default role not found, please contact administrator")
 	}
-	defaultMerchant, err := s.merchantRepository.FindByCode(constan.MerchantSampleCode)
+	defaultMerchant, err := s.merchantRepository.FindByCode(constant.MerchantSampleCode)
 	if err != nil {
 		return nil, fmt.Errorf("default merchant not found, please contact administrator")
 	}
@@ -82,5 +91,39 @@ func (s *UserService) Register(request request.RegisterRequest) (*model.User, er
 	token, err := util.GenerateToken(newUser.Code, newUser.ID, newUser.Username, newUser.Name, newUser.MerchantId, newUser.RoleId)
 	newUser.Token = &token
 	return &newUser, nil
+}
 
+func (s *UserService) Create(request authRequest.CreateUserRequest) (*model.User, error) {
+	var user model.User
+	user.Name = request.Name
+	user.Code = uuid.NewString()
+	user.Email = request.Email
+	user.Username = request.Username
+	user.Address = &request.Address
+	user.Phone = &request.Phone
+	user.Active = constant.IndicatorActive
+	user.Status = constant.StatusActive
+
+	defaultRole, err := s.roleRepository.FindByName(request.RoleCodes[0])
+	if err != nil {
+		return nil, fmt.Errorf("default role not found, please contact administrator")
+	}
+	defaultMerchant, err := s.merchantRepository.FindByCode(constant.MerchantSampleCode)
+	if err != nil {
+		return nil, fmt.Errorf("default merchant not found, please contact administrator")
+	}
+	user.RoleId = defaultRole.ID
+	user.MerchantId = defaultMerchant.ID
+	user.MerchantCode = &defaultMerchant.Code
+	user.MerchantName = &defaultMerchant.Name
+	user.Password, _ = helper.HashPassword(request.Password)
+	newUser, err := s.userRepository.Create(user)
+	if err != nil {
+		return nil, fmt.Errorf("Something wrong when create user")
+	}
+	s.merchantRepository.CreateDirect(newUser.ID, defaultMerchant.ID, newUser.ID, newUser.Name)
+	s.roleRepository.CreateDirect(newUser.ID, defaultRole.ID, newUser.ID, newUser.Name)
+	token, err := util.GenerateToken(newUser.Code, newUser.ID, newUser.Username, newUser.Name, newUser.MerchantId, newUser.RoleId)
+	newUser.Token = &token
+	return &newUser, nil
 }

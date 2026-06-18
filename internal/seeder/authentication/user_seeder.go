@@ -1,7 +1,7 @@
 package seeder
 
 import (
-	constan "BackendPOS/internal/constant"
+	"BackendPOS/internal/constant"
 	"BackendPOS/internal/helper"
 	modelAuth "BackendPOS/internal/model/authentication"
 	modelMaintenance "BackendPOS/internal/model/maintenance"
@@ -25,49 +25,49 @@ func seedPermission(db *gorm.DB) {
 		{
 			Name:        "authentication",
 			Description: "Authentication",
-			Active:      constan.IndicatorActive,
+			Active:      constant.IndicatorActive,
 			Children: []modelAuth.Permission{
 				{
 					Name:        "user.index",
 					Description: "View User Data",
-					Active:      constan.IndicatorActive,
+					Active:      constant.IndicatorActive,
 					Children: []modelAuth.Permission{
 						{
 							Name:        "user.create",
 							Description: "Create User Data",
-							Active:      constan.IndicatorActive,
+							Active:      constant.IndicatorActive,
 						},
 						{
 							Name:        "user.edit",
 							Description: "Edit User Data",
-							Active:      constan.IndicatorActive,
+							Active:      constant.IndicatorActive,
 						},
 						{
 							Name:        "user.delete",
 							Description: "Delete User Data",
-							Active:      constan.IndicatorActive,
+							Active:      constant.IndicatorActive,
 						},
 					},
 				},
 				{
 					Name:        "role.index",
 					Description: "View Role Data",
-					Active:      constan.IndicatorActive,
+					Active:      constant.IndicatorActive,
 					Children: []modelAuth.Permission{
 						{
 							Name:        "role.create",
 							Description: "Create Role Data",
-							Active:      constan.IndicatorActive,
+							Active:      constant.IndicatorActive,
 						},
 						{
 							Name:        "role.edit",
 							Description: "Edit Role Data",
-							Active:      constan.IndicatorActive,
+							Active:      constant.IndicatorActive,
 						},
 						{
 							Name:        "role.delete",
 							Description: "Delete Role Data",
-							Active:      constan.IndicatorActive,
+							Active:      constant.IndicatorActive,
 						},
 					},
 				},
@@ -76,27 +76,27 @@ func seedPermission(db *gorm.DB) {
 		{
 			Name:        "maintenance",
 			Description: "Maintenance",
-			Active:      constan.IndicatorActive,
+			Active:      constant.IndicatorActive,
 			Children: []modelAuth.Permission{
 				{
 					Name:        "merchant.index",
 					Description: "View Merchant Data",
-					Active:      constan.IndicatorActive,
+					Active:      constant.IndicatorActive,
 					Children: []modelAuth.Permission{
 						{
 							Name:        "merchant.create",
 							Description: "Create Merchant Data",
-							Active:      constan.IndicatorActive,
+							Active:      constant.IndicatorActive,
 						},
 						{
 							Name:        "merchant.edit",
 							Description: "Edit Merchant Data",
-							Active:      constan.IndicatorActive,
+							Active:      constant.IndicatorActive,
 						},
 						{
 							Name:        "merchant.delete",
 							Description: "Delete Merchant Data",
-							Active:      constan.IndicatorActive,
+							Active:      constant.IndicatorActive,
 						},
 					},
 				},
@@ -177,7 +177,7 @@ func seedMerchant(db *gorm.DB) {
 			Address:         helper.NullableString("Jalan Raya Sayan, Banjar Gg. Pande No.77, Sayan, Kecamatan Ubud, Kabupaten Gianyar, Bali 80571"),
 			PicName:         helper.NullableString("Angga Pamungkas"),
 			Domain:          "console",
-			Active:          constan.IndicatorActive,
+			Active:          constant.IndicatorActive,
 			PicEmail:        "medcer@gmail.com",
 			CreatedUserID:   1,
 			CreatedUserName: "Surendra Made",
@@ -187,7 +187,7 @@ func seedMerchant(db *gorm.DB) {
 			Address:         helper.NullableString("Jl. Raya Singapadu, Singapadu, Kec. Sukawati, Kabupaten Gianyar, Bali 80582"),
 			PicName:         helper.NullableString("Luke Nichols"),
 			Domain:          "balizoo",
-			Active:          constan.IndicatorActive,
+			Active:          constant.IndicatorActive,
 			PicEmail:        "balizoo@gmail.com",
 			CreatedUserID:   1,
 			CreatedUserName: "Surendra Made",
@@ -198,7 +198,7 @@ func seedMerchant(db *gorm.DB) {
 			Address:         helper.NullableString("1600 Amphitheatre Parkway, Mountain View, California."),
 			PicName:         helper.NullableString("Luke Nichols"),
 			Domain:          "sample",
-			Active:          constan.IndicatorActive,
+			Active:          constant.IndicatorActive,
 			PicEmail:        "merchantsample@gmail.com",
 			CreatedUserID:   1,
 			CreatedUserName: "Surendra Made",
@@ -276,8 +276,8 @@ func seedUser(db *gorm.DB) {
 	// insert using upsert
 	for _, user := range users {
 		user.Code = uuid.New().String()
-		user.Active = constan.IndicatorActive
-		user.Status = constan.StatusActive
+		user.Active = constant.IndicatorActive
+		user.Status = constant.StatusActive
 		user.MerchantId = merchant.ID
 		user.MerchantCode = &merchant.Code
 		user.MerchantName = &merchant.Name
@@ -330,12 +330,12 @@ func seedRole(db *gorm.DB) {
 		{
 			Name:        "administrator",
 			Description: helper.NullableString("Administrator"),
-			Active:      constan.IndicatorActive,
+			Active:      constant.IndicatorActive,
 		},
 		{
 			Name:        "operator",
 			Description: helper.NullableString("Operator"),
-			Active:      constan.IndicatorActive,
+			Active:      constant.IndicatorActive,
 		},
 	}
 

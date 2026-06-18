@@ -1,4 +1,4 @@
-package constan
+package constant
 
 const (
 	EnvProduction  = "production"

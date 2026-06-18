@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 
-	"BackendPOS/internal/model/authentication"
+	model "BackendPOS/internal/model/authentication"
 
 	"gorm.io/gorm"
 )
@@ -18,7 +18,7 @@ type UserRepositoryInterface interface {
 	FindById(userId uint64) (model.User, error)
 	Delete(userCode string) error
 	Create(user model.User) (model.User, error)
-	AssignRole(userID uint64, roleID uint64) error
+	AssignRole(userID uint64, roleID uint64, createdUserID uint64, createdUserName string) error
 }
 
 type userRepository struct {
@@ -94,16 +94,23 @@ func (r *userRepository) Create(user model.User) (model.User, error) {
 	return user, nil
 }
 
-func (r *userRepository) AssignRole(userID uint64, roleID uint64) error {
-	//ctx := gin.Context{}
-	//userRole := &model.UserRole{}
-	//userRole.UserId = userID
-	//userRole.RoleId = roleID
-	//userRole.CreatedUserId = ctx.GetUint64("user_id")
-	//userRole.CreatedUserName = ctx.GetString("user_name")
-	//err := r.db.Create(&userRole).Error
-	//if err != nil {
-	//	return err
-	//}
+func (r *userRepository) AssignRole(userID uint64, roleID uint64, createdUserID uint64, createdUserName string) error {
+	var userRole model.UserRole
+	userRole.UserID = userID
+	userRole.RoleID = roleID
+	userRole.CreatedUserID = createdUserID
+	userRole.CreatedUserName = createdUserName
+	err := r.db.Create(&userRole).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userRepository) revokeRole(userID uint64, roleID uint64) error {
+	err := r.db.Where("user_id = ? AND role_id = ?", userID, roleID).Delete(&model.UserRole{}).Error
+	if err != nil {
+		return err
+	}
 	return nil
 }

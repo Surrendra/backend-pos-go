@@ -22,6 +22,7 @@ func RegisterMaintenanceRoute(r *gin.RouterGroup, db *gorm.DB, authz *authServic
 		merchant := maintenance.Group("/merchant")
 		{
 			merchant.GET("datatable", middleware.RequirePermission(authz, "merchant.index"), merchantController.Datatable)
+			merchant.GET("get_data", middleware.RequirePermission(authz, "merchant.index"), merchantController.GetData)
 			merchant.POST("create", middleware.RequirePermission(authz, "merchant.create"), merchantController.Create)
 			merchant.PUT("update/:code", middleware.RequirePermission(authz, "merchant.update"), merchantController.Update)
 			merchant.DELETE("delete/:code", middleware.RequirePermission(authz, "merchant.delete"), merchantController.Delete)

@@ -3,7 +3,7 @@ package main
 import (
 	"BackendPOS/internal/cache"
 	"BackendPOS/internal/config"
-	constan "BackendPOS/internal/constant"
+	"BackendPOS/internal/constant"
 	"BackendPOS/internal/database"
 	"BackendPOS/internal/route"
 	"time"
@@ -31,7 +31,7 @@ func main() {
 	if cfg.FrontendURL != "" {
 		whiteListUrl = append(whiteListUrl, cfg.FrontendURL)
 	}
-	if cfg.AppEnv == constan.EnvLocal || cfg.AppEnv == constan.EnvDevelopment {
+	if cfg.AppEnv == constant.EnvLocal || cfg.AppEnv == constant.EnvDevelopment {
 		authz.DeleteUserPermissionCache(1)
 		logrus.Info("Successfully DeleteUserPermissionCache for user ID 1")
 	}
@@ -44,7 +44,7 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 	api := r.Group("/api")
-	route.RegisterAuthenticationRoute(api, db)
+	route.RegisterAuthenticationRoute(api, db, authz)
 	route.RegisterMaintenanceRoute(api, db, authz)
 	r.Run(":" + cfg.AppPort)
 }
